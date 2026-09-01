@@ -4,7 +4,11 @@ import { CartProvider } from "../context/CartContext";
 export default function RootLayout() {
   return (
     <CartProvider>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="pizza/[id]" />
       </Stack>

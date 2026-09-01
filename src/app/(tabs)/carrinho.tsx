@@ -7,7 +7,7 @@ import {
   View,
 } from "react-native";
 
-import { useCart } from "../context/CartContext";
+import { useCart } from "../../context/CartContext";
 
 export default function CarrinhoScreen() {
   const {
