@@ -9,8 +9,6 @@ import {
 
 import { useCart } from "../../context/CartContext";
 
-const BASE_URL = "http://10.0.2.2:3000";
-
 export default function CarrinhoScreen() {
   const {
     cartItems,
@@ -38,22 +36,18 @@ export default function CarrinhoScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>
-        Meu Carrinho 🛒
-      </Text>
+      <Text style={styles.titulo}>Meu Carrinho 🛒</Text>
 
       <FlatList
         data={cartItems}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.lista}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+            <View style={styles.card}>
             <Image
-              source={{
-                uri: `${BASE_URL}/images/${item.imagem}`,
-              }}
-              style={styles.imagem}
-              resizeMode="cover"
+                source={item.imagem}
+                style={styles.imagem}
+                resizeMode="cover"
             />
 
             <View style={styles.info}>
@@ -62,9 +56,7 @@ export default function CarrinhoScreen() {
               </Text>
 
               <Text style={styles.preco}>
-                R$ {Number(item.preco)
-                  .toFixed(2)
-                  .replace(".", ",")}
+                R$ {item.preco.toFixed(2).replace(".", ",")}
               </Text>
 
               <View style={styles.controles}>
@@ -123,112 +115,114 @@ export default function CarrinhoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 60,
-    paddingHorizontal: 16,
-  },
+    container: {
+        flex: 1,
+        paddingTop: 60,
+        paddingHorizontal: 16,
+    },
 
-  vazio: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-  },
+    vazio: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+    },
 
-  emoji: {
-    fontSize: 70,
-  },
+    emoji: {
+        fontSize: 70,
+    },
 
-  titulo: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
+    titulo: {
+        fontSize: 28,
+        fontWeight: "bold",
+        marginBottom: 20,
+    },
 
-  subtitulo: {
-    fontSize: 17,
-    textAlign: "center",
-  },
+    subtitulo: {
+        fontSize: 17,
+        textAlign: "center",
+    },
 
-  lista: {
-    paddingBottom: 20,
-  },
+    lista: {
+        paddingBottom: 20,
+    },
 
-  card: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    marginBottom: 15,
-    overflow: "hidden",
-    elevation: 3,
-  },
+    card: {
+        flexDirection: "row",
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        marginBottom: 15,
+        overflow: "hidden",
+        elevation: 3,
+    },
 
-  imagem: {
-    width: 110,
-    height: 130,
-  },
+    imagem: {
+        width: 110,
+        height: 130,
+    },
 
-  info: {
-    flex: 1,
-    padding: 12,
-  },
+    info: {
+        flex: 1,
+        padding: 12,
+    },
 
-  nome: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
+    nome: {
+        fontSize: 18,
+        fontWeight: "bold",
+    },
 
-  preco: {
-    fontSize: 16,
-    marginTop: 5,
-  },
+    preco: {
+        fontSize: 16,
+        marginTop: 5,
+    },
 
-  controles: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 15,
-    gap: 10,
-  },
+    controles: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 15,
+        gap: 10,
+    },
 
-  quantidadeBotao: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#000",
-    alignItems: "center",
-    justifyContent: "center",
-  },
+    quantidadeBotao: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        backgroundColor: "#000",
+        alignItems: "center",
+        justifyContent: "center",
+    },
 
-  quantidadeTexto: {
-    color: "#fff",
-    fontSize: 20,
-  },
+    quantidadeTexto: {
+        color: "#fff",
+        fontSize: 20,
+    },
 
-  quantidade: {
-    fontSize: 17,
-    fontWeight: "bold",
-  },
+    quantidade: {
+        fontSize: 17,
+        fontWeight: "bold",
+    },
 
-  remover: {
-    fontSize: 13,
-    textDecorationLine: "underline",
-  },
+    remover: {
+        fontSize: 13,
+        textDecorationLine: "underline",
+    },
 
-  totalContainer: {
-    borderTopWidth: 1,
-    paddingVertical: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
+    totalContainer: {
+        borderTopWidth: 1,
+        paddingVertical: 20,
+        flexDirection: "row",
+        justifyContent: "space-between",
+    },
 
-  totalTexto: {
-    fontSize: 22,
-    fontWeight: "bold",
-  },
+    totalTexto: {
+        fontSize: 22,
+        fontWeight: "bold",
+    },
 
-  total: {
-    fontSize: 22,
-    fontWeight: "bold",
-  },
+    total: {
+        fontSize: 22,
+        fontWeight: "bold",
+    },
+    
 });
+

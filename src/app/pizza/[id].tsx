@@ -1,130 +1,213 @@
 import {
-    Image,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
-import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import {
+  router,
+  useLocalSearchParams,
+} from "expo-router";
+
+import { useEffect, useState } from "react";
 
 import { useCart } from "../../context/CartContext";
-import { pizzas } from "../../data/pizzas";
+
+type Pizza = {
+  id: number;
+  nome: string;
+  descricao: string;
+  preco: number | string;
+  imagem: string;
+};
+
+const BASE_URL = "http://10.0.2.2:3000";
 
 export default function PizzaDetalhesScreen() {
-    const { id } = useLocalSearchParams<{ id: string }>();
-    const { adicionarAoCarrinho } = useCart();
+  const { id } = useLocalSearchParams<{ id: string }>();
 
-    const [quantidade, setQuantidade] = useState(1);
+  const { adicionarAoCarrinho } = useCart();
 
-    const pizza = pizzas.find(
-        (item) => item.id === id
+  const [pizza, setPizza] = useState<Pizza | null>(null);
+  const [quantidade, setQuantidade] = useState(1);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    buscarPizza();
+  }, [id]);
+
+  async function buscarPizza() {
+    try {
+      setCarregando(true);
+      setErro("");
+
+      const resposta = await fetch(
+        `${BASE_URL}/pizzas/${id}`
+      );
+
+      if (!resposta.ok) {
+        throw new Error("Pizza não encontrada.");
+      }
+
+      const dados = await resposta.json();
+
+      setPizza(dados);
+    } catch (erro) {
+      console.error("Erro ao buscar pizza:", erro);
+
+      setErro("Não foi possível carregar a pizza.");
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  if (carregando) {
+    return (
+      <View style={styles.erro}>
+        <ActivityIndicator size="large" />
+
+        <Text style={styles.mensagem}>
+          Carregando pizza...
+        </Text>
+      </View>
     );
+  }
 
+  if (!pizza || erro) {
+    return (
+      <View style={styles.erro}>
+        <Text style={styles.erroTexto}>
+          {erro || "Pizza não encontrada."}
+        </Text>
+
+        <Pressable
+          style={styles.botaoVoltarErro}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.botaoVoltarTexto}>
+            Voltar
+          </Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  const preco = Number(pizza.preco);
+
+  const total = preco * quantidade;
+  function adicionar() {
     if (!pizza) {
-        return (
-        <View style={styles.erro}>
-            <Text style={styles.erroTexto}>
-            Pizza não encontrada.
-            </Text>
-        </View>
-        );
+      return;
     }
 
-    const total = pizza.preco * quantidade;
-
-        function adicionar() {
-            if (!pizza) {
-                return;
-            }
-
-            adicionarAoCarrinho(pizza, quantidade);
-            router.push("/carrinho");
-        }
-
-        return (
-            <View style={styles.container}>
-            <Pressable
-                style={styles.voltar}
-                onPress={() => router.back()}
-            >
-                <Text style={styles.voltarTexto}>← Voltar</Text>
-            </Pressable>
-
-            <Image
-                source={pizza.imagem}
-                style={styles.imagem}
-                resizeMode="cover"
-            />
-
-            <View style={styles.conteudo}>
-                <Text style={styles.nome}>
-                {pizza.nome}
-                </Text>
-
-                <Text style={styles.descricao}>
-                {pizza.descricao}
-                </Text>
-
-                <Text style={styles.preco}>
-                R$ {pizza.preco.toFixed(2).replace(".", ",")}
-                </Text>
-
-                <Text style={styles.tituloQuantidade}>
-                Quantidade
-                </Text>
-
-                <View style={styles.controles}>
-                <Pressable
-                    style={styles.botaoQuantidade}
-                    onPress={() =>
-                    setQuantidade(
-                        Math.max(1, quantidade - 1)
-                    )
-                    }
-                >
-                    <Text style={styles.simbolo}>−</Text>
-                </Pressable>
-
-                <Text style={styles.quantidade}>
-                    {quantidade}
-                </Text>
-
-                <Pressable
-                    style={styles.botaoQuantidade}
-                    onPress={() =>
-                    setQuantidade(quantidade + 1)
-                    }
-                >
-                    <Text style={styles.simbolo}>+</Text>
-                </Pressable>
-                </View>
-
-                <View style={styles.resumo}>
-                <Text style={styles.resumoTexto}>
-                    Total
-                </Text>
-
-                <Text style={styles.total}>
-                    R$ {total.toFixed(2).replace(".", ",")}
-                </Text>
-                </View>
-
-                <Pressable
-                style={({ pressed }) => [
-                    styles.botaoAdicionar,
-                    pressed && styles.botaoPressionado,
-                ]}
-                onPress={adicionar}
-                >
-                <Text style={styles.botaoAdicionarTexto}>
-                    Adicionar ao carrinho
-                </Text>
-                </Pressable>
-            </View>
-            </View>
+    adicionarAoCarrinho(
+      {
+        id: pizza.id.toString(),
+        nome: pizza.nome,
+        descricao: pizza.descricao,
+        preco: preco,
+        imagem: pizza.imagem,
+      },
+      quantidade
     );
+
+    router.push("/carrinho");
+  }
+
+  return (
+    <View style={styles.container}>
+      <Pressable
+        style={styles.voltar}
+        onPress={() => router.back()}
+      >
+        <Text style={styles.voltarTexto}>
+          ← Voltar
+        </Text>
+      </Pressable>
+
+      <Image
+        source={{
+          uri: `${BASE_URL}/images/${pizza.imagem}`,
+        }}
+        style={styles.imagem}
+        resizeMode="cover"
+      />
+
+      <View style={styles.conteudo}>
+        <Text style={styles.nome}>
+          {pizza.nome}
+        </Text>
+
+        <Text style={styles.descricao}>
+          {pizza.descricao}
+        </Text>
+
+        <Text style={styles.preco}>
+          R$ {preco.toFixed(2).replace(".", ",")}
+        </Text>
+
+        <Text style={styles.tituloQuantidade}>
+          Quantidade
+        </Text>
+
+        <View style={styles.controles}>
+          <Pressable
+            style={styles.botaoQuantidade}
+            onPress={() =>
+              setQuantidade(
+                Math.max(1, quantidade - 1)
+              )
+            }
+          >
+            <Text style={styles.simbolo}>
+              −
+            </Text>
+          </Pressable>
+
+          <Text style={styles.quantidade}>
+            {quantidade}
+          </Text>
+
+          <Pressable
+            style={styles.botaoQuantidade}
+            onPress={() =>
+              setQuantidade(quantidade + 1)
+            }
+          >
+            <Text style={styles.simbolo}>
+              +
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.resumo}>
+          <Text style={styles.resumoTexto}>
+            Total
+          </Text>
+
+          <Text style={styles.total}>
+            R$ {total.toFixed(2).replace(".", ",")}
+          </Text>
+        </View>
+
+        <Pressable
+          style={({ pressed }) => [
+            styles.botaoAdicionar,
+            pressed && styles.botaoPressionado,
+          ]}
+          onPress={adicionar}
+        >
+          <Text style={styles.botaoAdicionarTexto}>
+            Adicionar ao carrinho
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -251,9 +334,29 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    padding: 20,
   },
 
   erroTexto: {
     fontSize: 18,
+    textAlign: "center",
+  },
+
+  mensagem: {
+    marginTop: 10,
+    fontSize: 16,
+  },
+
+  botaoVoltarErro: {
+    marginTop: 20,
+    backgroundColor: "#000",
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 10,
+  },
+
+  botaoVoltarTexto: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });

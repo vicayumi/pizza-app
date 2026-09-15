@@ -9,16 +9,68 @@ import {
 import { router } from "expo-router";
 import { useState } from "react";
 
+const BASE_URL = "http://10.0.2.2:3000";
+
 export default function CadastroScreen() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
 
-  function cadastrar() {
-    // Vamos conectar ao backend depois.
+  const [mensagem, setMensagem] = useState("");
+  const [carregando, setCarregando] = useState(false);
 
-    router.replace("/login");
+  async function cadastrar() {
+    // Verifica se todos os campos foram preenchidos
+    if (!nome || !email || !senha || !confirmarSenha) {
+      setMensagem("Preencha todos os campos.");
+      return;
+    }
+
+    // Verifica se as senhas são iguais
+    if (senha !== confirmarSenha) {
+      setMensagem("As senhas não são iguais.");
+      return;
+    }
+
+    try {
+      setCarregando(true);
+      setMensagem("");
+
+      const resposta = await fetch(`${BASE_URL}/cadastro`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nome,
+          email,
+          senha,
+        }),
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        setMensagem(dados.mensagem || "Erro ao criar conta.");
+        return;
+      }
+
+      setMensagem("Conta criada com sucesso!");
+
+      // Vai para o login depois de cadastrar
+      setTimeout(() => {
+        router.replace("/login");
+      }, 1000);
+    } catch (erro) {
+      console.error("Erro ao cadastrar:", erro);
+
+      setMensagem(
+        "Não foi possível conectar ao servidor."
+      );
+    } finally {
+      setCarregando(false);
+    }
   }
 
   return (
@@ -99,15 +151,24 @@ export default function CadastroScreen() {
           secureTextEntry
         />
 
+        {mensagem !== "" && (
+          <Text style={styles.mensagem}>
+            {mensagem}
+          </Text>
+        )}
+
         <Pressable
           style={({ pressed }) => [
             styles.botao,
             pressed && styles.botaoPressionado,
           ]}
           onPress={cadastrar}
+          disabled={carregando}
         >
           <Text style={styles.botaoTexto}>
-            Criar conta
+            {carregando
+              ? "Criando conta..."
+              : "Criar conta"}
           </Text>
         </Pressable>
 
@@ -187,6 +248,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: 16,
     backgroundColor: "#fafafa",
+  },
+
+  mensagem: {
+    marginTop: 12,
+    textAlign: "center",
+    fontSize: 14,
+    color: "#d00",
   },
 
   botao: {

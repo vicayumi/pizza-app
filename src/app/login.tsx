@@ -6,17 +6,67 @@ import {
   View,
 } from "react-native";
 
+import { useAuth } from "../context/AuthContext";
 import { router } from "expo-router";
 import { useState } from "react";
 
+const BASE_URL = "http://10.0.2.2:3000";
+
 export default function LoginScreen() {
+  const { entrar: salvarUsuario } = useAuth();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
-  function entrar() {
-    // Vamos conectar ao sistema de login depois.
+  const [mensagem, setMensagem] = useState("");
+  const [carregando, setCarregando] = useState(false);
 
-    router.replace("/perfil");
+  async function entrar() {
+    // Verifica se os campos foram preenchidos
+    if (!email || !senha) {
+      setMensagem("Preencha o email e a senha.");
+      return;
+    }
+
+    try {
+      setCarregando(true);
+      setMensagem("");
+
+      const resposta = await fetch(`${BASE_URL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          senha,
+        }),
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        setMensagem(
+          dados.mensagem || "Email ou senha incorretos."
+        );
+        return;
+      }
+
+      setMensagem("Login realizado com sucesso!");
+
+      salvarUsuario(dados.usuario);
+
+      setTimeout(() => {
+        router.replace("/perfil");
+      }, 500);
+    } catch (erro) {
+      console.error("Erro ao fazer login:", erro);
+
+      setMensagem(
+        "Não foi possível conectar ao servidor."
+      );
+    } finally {
+      setCarregando(false);
+    }
   }
 
   return (
@@ -72,15 +122,24 @@ export default function LoginScreen() {
           secureTextEntry
         />
 
+        {mensagem !== "" && (
+          <Text style={styles.mensagem}>
+            {mensagem}
+          </Text>
+        )}
+
         <Pressable
           style={({ pressed }) => [
             styles.botao,
             pressed && styles.botaoPressionado,
           ]}
           onPress={entrar}
+          disabled={carregando}
         >
           <Text style={styles.botaoTexto}>
-            Entrar
+            {carregando
+              ? "Entrando..."
+              : "Entrar"}
           </Text>
         </Pressable>
 
@@ -160,6 +219,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: 16,
     backgroundColor: "#fafafa",
+  },
+
+  mensagem: {
+    marginTop: 12,
+    textAlign: "center",
+    fontSize: 14,
+    color: "#d00",
   },
 
   botao: {

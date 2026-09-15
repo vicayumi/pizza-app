@@ -5,9 +5,11 @@ import {
   View,
 } from "react-native";
 
+import { useAuth } from "../../context/AuthContext";
 import { router } from "expo-router";
 
 export default function PerfilScreen() {
+  const { usuario, sair: fazerLogout } = useAuth(); 
   return (
     <View style={styles.container}>
 
@@ -23,11 +25,11 @@ export default function PerfilScreen() {
         </View>
 
         <Text style={styles.nome}>
-          Visitante
+          {usuario ? usuario.nome : "Visitante"}
         </Text>
 
         <Text style={styles.email}>
-          Faça login para acessar sua conta
+          {usuario ? usuario.email : "Faça login para acessar sua conta"}
         </Text>
       </View>
 
@@ -36,10 +38,16 @@ export default function PerfilScreen() {
           styles.botaoLogin,
           pressed && styles.botaoPressionado,
         ]}
-        onPress={() => router.push("/login")}
+        onPress={() => {
+          if (usuario) {
+            fazerLogout();
+          } else {
+            router.push("/login");
+          }
+        }}
       >
         <Text style={styles.botaoLoginTexto}>
-          Entrar ou criar conta
+          {usuario ? "Sair da conta" : "Entrar ou criar conta"}
         </Text>
       </Pressable>
 
