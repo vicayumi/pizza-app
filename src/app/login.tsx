@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     textAlign: "center",
     fontSize: 14,
-    color: "#d00",
+    color: "rgb(0, 0, 0)",
   },
 
   botao: {
